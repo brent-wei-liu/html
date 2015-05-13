@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>D3 - Data Driven Documents</title>
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <style type="text/css">
+
+    body
+    {
+      padding-top: 50px;
+      padding-left: 100px;
+    }
+
+    .bar
+    {
+      display: inline-block;
+      width: 20px;
+      height: 75px; /* Gets overriden by D3-assigned height below */
+      margin-right: 2px;
+      background-color: teal;
+    }
+
+  </style>
+</head>
+<body>
+<div id="rect-demo">
+</div>
+<button id="btn1" type="submit" class="btn btn-primary">Upload</button>
+<button id="btn2" type="submit" class="btn btn-primary">Upload</button>
+<script type="text/javascript">
+
+  var dataset = [ 5, 10, 15, 20, 25, 40 ];
+
+  d3.select('body').selectAll('div')
+    .data(dataset)
+    .enter()
+    .append('div')
+    .attr('class', 'bar')
+    .style('height', function (d) {
+      return d * 1 + 'px';
+    });
+
+var rectDemo = d3.select("#rect-demo").
+  append("svg:svg").
+  attr("width", 400).
+  attr("height", 300);
+
+var rect = rectDemo.append("svg:rect").
+  attr("x", 100).
+  attr("y", 100).
+  attr("height", 100).
+  attr("width", 200);
+
+  d3.select("#btn1").on("click", function() {
+    rect.transition().attr("x",320);
+/*  rect.transition().attr("width",120); // will make it bigger
+ 
+  rect.style("fill","white") // if the fill is originally left blank and comes
+                         //  from a style sheet, it will start as black 
+  .transition()
+  .style("fill","blue");
+ 
+  rect.transition()
+  .style("opacity",0);
+*/
+  });
+
+
+  d3.select("#btn2").on("click", function() {
+      d3.select("body").transition()
+      .styleTween("color", function() { return d3.interpolate("green", "red"); });
+  });
+</script>
+</body>
+</html>
+

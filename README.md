@@ -1,2 +1,3 @@
-# html
-/var/www/html
+# www
+
+web pages
