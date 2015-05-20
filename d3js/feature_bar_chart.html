@@ -47,44 +47,53 @@ body {
 .infotext {
     font-size: 12px;
 }
+.x.axiscontext path {
+  display: inline;
+  stroke-width:1;
+}
+.x.axiscontext line ,.x.axiscontext path{
+  fill: none;
+  stroke: #000;
+   shape-rendering: crispEdges;
+}
+
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+
+
+
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
 
 var margin = {top: 20, right: 190, bottom: 30, left: 40},
+    margin2 = {top: 40, right: 10, bottom: 20, left: 0},
     width = 1400 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-var x0 = d3.scale.ordinal()
-    .rangeRoundBands([0, width], .1);
-var x2 = d3.scale.ordinal()
-    .rangeRoundBands([0, width], .1);
+    height = 500 - margin.top - margin.bottom,
+    height2 = 200 - margin2.top - margin2.bottom;
+var total_height = height + margin.top + margin.bottom + height2 + margin2.top + margin2.bottom;
 
 
-var x1 = d3.scale.ordinal();
+var x_focus = d3.time.scale().range([0, width]);
+var x_context = d3.time.scale().range([0, width]);
+var x_duration = d3.scale.ordinal();
 
-var y = d3.scale.linear()
-    .range([height, 0]);
+var y_focus = d3.scale.linear().range([height, 0]);
+var y_context = d3.scale.linear().range([height2, 0]);
 
-var color = d3.scale.ordinal()
-    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#ff8c00"]);
+var color = d3.scale.ordinal().range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#ff8c00"]);
 
-var xAxis = d3.svg.axis()
-    .scale(x2)
-    .tickSize(6,0)
-    .ticks(10)
-    .orient("bottom");
-
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .tickFormat(d3.format(".2s"));
+var xAxis_focus = d3.svg.axis().scale(x_focus).tickSize(6,0).ticks(10).orient("bottom");
+var xAxis_context = d3.svg.axis().scale(x_context).tickSize(6,0).ticks(10).orient("bottom");
+var yAxis = d3.svg.axis().scale(y_focus).orient("left").tickFormat(d3.format(".2s"));
 
 var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
+        .attr("height", total_height )
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
@@ -100,39 +109,56 @@ var svg = d3.select("body").append("svg")
     .append('svg:path')
       .attr('d', "M 0 0 L 10 5 L 0 10 z");
 
+//brush
+var brush = d3.svg.brush().x(x_context).on("brush", brushed);
+
+var h = height+margin2.top;
+var context_svg = svg.append("g").attr("transform", "translate(" + margin2.left + "," + h + ")");
+
+var durations_svg;
+var x_axis_focus_svg;
 
 d3.csv("data.csv", function(error, data) {
-  var ageNames = d3.keys(data[0]).filter(function(key) { return key !== "State" && key !== "hasFailure"; });
+  var ageNames = d3.keys(data[0]).filter(function(key) { return key !== "StartTime" && key !== "hasFailure"; });
+  var parseDate = d3.time.format("%b %e %H:%M").parse;
   data.forEach(function(d) {
+//    console.log(d["StartTime"]);
+//    console.log(parseDate(d["StartTime"]));
+    d.StartTime = parseDate(d["StartTime"]);
     d.ages = ageNames.map(function(name) { return {name: name, value: +d[name],"hasFailure":d["hasFailure"]}; });
     d.hasFailure = +d["hasFailure"];
+    d.context = +d["Current Window"]
   });
-
-  console.log(data);
-  x0.domain(data.map(function(d) { return d.State; }));
-  x2.domain(data.map(function(d) { return d.State; }));
-  x1.domain(ageNames).rangeRoundBands([0, x0.rangeBand()]);
-  y.domain([0, d3.max(data, function(d) { return d3.max(d.ages, function(d) { return d.value; }); })]);
-
+  
+  var band_width_focus = width / data.length;
+  console.log("width:"+width + " band_width:" + band_width_focus);
+  var band_width_context = width / data.length;
+  x_focus.domain(d3.extent(data.map(function(d) { return d.StartTime; })));
+  x_duration.domain(ageNames).rangeRoundBands([0, band_width_focus]);
+  y_focus.domain([0, d3.max(data, function(d) { return d3.max(d.ages, function(d) { return d.value; }); })]);
+  
+  //brush
+  x_context.domain(x_focus.domain());
+  y_context.domain([0, d3.max(data, function(d) { return d.context })]);
   var h = height + 1;
-  var xa = svg.append("g")
+  x_axis_focus_svg = svg.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + h + ")")
-      .call(xAxis);
+      .call(xAxis_focus);
 
 
-  var y_axis = svg.append("g")
+  var y_axis_svg = svg.append("g")
       .attr("class", "y axis")
       .call(yAxis);
 
-    y_axis.append("text")
+    y_axis_svg.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", 6)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .text("Event Count");
 
-    y_axis.selectAll(".tick")
+    y_axis_svg.selectAll(".tick")
         .append("path")
           .attr("class","y grid")
           .attr("d", function(d,index){ return "M0 "+0+"L"+width+" "+0})
@@ -143,53 +169,40 @@ d3.csv("data.csv", function(error, data) {
 
 
 
-  var state = svg.selectAll(".state")
+  durations_svg = svg.selectAll(".duration")
       .data(data)
     .enter().append("g")
-      .attr("class", "g")
-      .attr("transform", function(d) { return "translate(" + x0(d.State) + ",0)"; });
+      .attr("class", "duration")
+      .attr("transform", function(d) { var xs =  x_focus(d.StartTime) ; return "translate(" + xs + ",0)"; });
 
-  var interval =   state.selectAll("rect")
+  var interval =   durations_svg.selectAll("rect")
       .data(function(d) { return d.ages; })
     .enter().append("rect")
-      .attr("width", x1.rangeBand())
+      .attr("width", function(d) { return band_width_focus/d.length;})
       .attr("x", function(d, index) { 
-                    if(index==4)  return x1(d.name)+ 0.1*x1.rangeBand();
-                    return x1(d.name); })
-      .attr("y", function(d) { return y(d.value); })
-      .attr("height", function(d) { return height - y(d.value); })
+                    if(index==4)  return x_duration(d.name) + 0.1*x_duration.rangeBand();
+                    return x_duration(d.name); })
+      .attr("y", function(d) { return y_focus(d.value); })
+      .attr("height", function(d) { return height - y_focus(d.value); })
       .style("fill", function(d) { return color(d.name); });
 
 
-/*
-    state.selectAll("rect")
-      .data(function(d) { return d.ages; })
-      .enter().append("rect")
-      .attr("width", x1.rangeBand())
-      .attr("x", function(d, index) { 
-                    if(index==4)  return x1(d.name)+3;
-                    return x1(d.name); })
-      .attr("y", function(d) { return 0; })
-      .attr("height", function(d) { return (height - y(d.value)); })
-      .style("fill", function(d) { return color(d.name); });
-*/
-
-      state.selectAll(".point").
+      durations_svg.selectAll(".point").
           data(function(d) { return d.ages; }).
           enter().append("path").
           filter(function(d, index) {  if(index==4)  return true;   return false; }).
           attr("class","point").
           attr("d", d3.svg.symbol().type("triangle-down")).
           attr("transform", function(d) {
-                                var x_v = x1(d.name)+x1.rangeBand()/2 + 2;
-                                var y_v = y(d.value) - 5; 
+                                var x_v = x_duration(d.name) + x_duration.rangeBand()/2 + 2;
+                                var y_v = y_focus(d.value) - 5; 
                                 return "translate(" + x_v+ "," + y_v + ")"; }).
           attr("fill", function(d) { if(d["hasFailure"]==1 ) return "red";
-                           else return "lightgray"});
+                                     else return "lightgray"});
       
-      state.filter(function(d, index) {  if(index==0)  return false;   return true; })
+      durations_svg.filter(function(d, index) {  if(index==0)  return false;   return true; })
           .append("path")
-          .attr("d", function(){ var m=0.2*x1.rangeBand(); return "M-"+m+" 0 L-"+m+" "+ height})
+          .attr("d", function(){ var m = 0.2*x_duration.rangeBand(); return "M-" + m + " 0 L-" + m + " " + height})
           .attr("stroke","gray")
           .attr("stroke-width", "1")
           .attr("fill","none")
@@ -197,80 +210,121 @@ d3.csv("data.csv", function(error, data) {
  
          
 
-var legend = svg.selectAll(".legend")
-      .data(ageNames.slice())
-    .enter().append("g")
-      .filter(function(d, index) {  if(index==5)  return false;   return true; })
-      .attr("class", "legend")
-      .attr("transform", function(d, i) { return "translate(100," + i * 20 + ")"; });
+    var legend = svg.selectAll(".legend")
+          .data(ageNames.slice())
+        .enter().append("g")
+          .filter(function(d, index) {  if(index==5)  return false;   return true; })
+          .attr("class", "legend")
+          .attr("transform", function(d, i) { return "translate(100," + i * 20 + ")"; });
 
-legend.append("rect")
-      .attr("x", width - 18)
-      .attr("width", 18)
-      .attr("height", 18)
-      .style("fill", color);
+    legend.append("rect")
+          .attr("x", width - 18)
+          .attr("width", 18)
+          .attr("height", 18)
+          .style("fill", color);
 
-legend.append("text")
-      .attr("x", width - 24)
-      .attr("y", 9)
-      .attr("dy", ".35em")
-      .style("text-anchor", "end")
-      .text(function(d) { return d; });
-
-
-
-var brace_x =  width+margin.right-87;
-var braceGroup = svg.append("g")
-      .attr("transform", "translate("+ brace_x+", 0)");
-braceGroup.append("path")
-      .attr("class", "brace")
-      .attr("d", makeCurlyBrace(0, 78, 0, 0, 20, 0.55));
-
-var braceLabelGroup = braceGroup.append("g")
-      .attr("transform", "translate(22, 38)");
-
-    braceLabelGroup.append("text")
-      .attr("class", "infotext")
-      .attr("transform", "translate(0, 0)")
-      .text("observation");
-    braceLabelGroup.append("text")
-      .attr("class", "infotext")
-      .attr("transform", "translate(0, 10)")
-      .text("period");
+    legend.append("text")
+          .attr("x", width - 24)
+          .attr("y", 9)
+          .attr("dy", ".35em")
+          .style("text-anchor", "end")
+          .text(function(d) { return d; });
 
 
-function makeCurlyBrace(x1,y1,x2,y2,w,q)
-{
-    //Calculate unit vector
-    var dx = x1-x2;
-    var dy = y1-y2;
-    var len = Math.sqrt(dx*dx + dy*dy);
-    dx = dx / len;
-    dy = dy / len;
 
-    //Calculate Control Points of path,
-    var qx1 = x1 + q*w*dy;
-    var qy1 = y1 - q*w*dx;
-    var qx2 = (x1 - .25*len*dx) + (1-q)*w*dy;
-    var qy2 = (y1 - .25*len*dy) - (1-q)*w*dx;
-    var tx1 = (x1 -  .5*len*dx) + w*dy;
-    var ty1 = (y1 -  .5*len*dy) - w*dx;
-    var qx3 = x2 + q*w*dy;
-    var qy3 = y2 - q*w*dx;
-    var qx4 = (x1 - .75*len*dx) + (1-q)*w*dy;
-    var qy4 = (y1 - .75*len*dy) - (1-q)*w*dx;
+    var brace_x =  width + margin.right - 87;
+    var braceGroup = svg.append("g").attr("transform", "translate("+ brace_x+", 0)");
+    braceGroup.append("path")
+          .attr("class", "brace")
+          .attr("d", makeCurlyBrace(0, 78, 0, 0, 20, 0.55));
 
-    return ( "M " +  x1 + " " +  y1 +
-        " Q " + qx1 + " " + qy1 + " " + qx2 + " " + qy2 +
-        " T " + tx1 + " " + ty1 +
-        " M " +  x2 + " " +  y2 +
-        " Q " + qx3 + " " + qy3 + " " + qx4 + " " + qy4 +
-        " T " + tx1 + " " + ty1 );
-}
+    var braceLabelGroup = braceGroup.append("g")
+          .attr("transform", "translate(22, 38)");
+
+        braceLabelGroup.append("text")
+          .attr("class", "infotext")
+          .attr("transform", "translate(0, 0)")
+          .text("observation");
+        braceLabelGroup.append("text")
+          .attr("class", "infotext")
+          .attr("transform", "translate(0, 10)")
+          .text("period");
+
+
+
+    //brush
+    var context_bar_width = 10;
+    
+//    console.log(x_context.domain());
+//    console.log(x_context(x_context.domain()[0])); 
+
+    context_svg.selectAll("rect")
+        .data(data)
+      .enter().append("rect")
+        .attr("x", function(d) { return x_context(d.StartTime) + band_width_context/2 - context_bar_width/2 + 1;  })
+        .attr("y", function(d) { return height2 - y_context(d.context); })
+        .attr("width", 10)
+        .attr("height", function(d) { return y_context(d.context); });
+
+    context_svg.append("g")
+        .attr("class", "x axiscontext")
+        .attr("transform", "translate(0," + height2 + ")")
+        .call(xAxis_context);
+
+    context_svg.append("g")
+        .attr("class", "x brush")
+        .call(brush)
+      .selectAll("rect")
+        .attr("y", -6)
+        .attr("height", height2 + 7);
 
 
 });
 
+//brush
+function brushed() {
+
+  x_focus.domain(brush.empty() ? x_context.domain() : brush.extent());
+//console.log(brush.extent());
+/*  durations_svg.attr("transform", function(d) { var xs =  x0(d.State); 
+                                        console.log(d);
+                                        return "translate(" + xs + ",0)"; });
+
+*/
+//  durations_svg.forEach(function(s){  console.log(s); s.attr("width",20); });
+//  durations_svg.attr("transform",function(d){ console.log(x2(d.State));return "translate(" + x2(d.State) + ",0)";});
+
+  x_axis_focus_svg.select(".x.axis").call(xAxis_focus);
+
+}
+function makeCurlyBrace(x1,y1,x2,y2,w,q)
+    {
+        //Calculate unit vector
+        var dx = x1-x2;
+        var dy = y1-y2;
+        var len = Math.sqrt(dx*dx + dy*dy);
+        dx = dx / len;
+        dy = dy / len;
+
+        //Calculate Control Points of path,
+        var qx1 = x1 + q*w*dy;
+        var qy1 = y1 - q*w*dx;
+        var qx2 = (x1 - .25*len*dx) + (1-q)*w*dy;
+        var qy2 = (y1 - .25*len*dy) - (1-q)*w*dx;
+        var tx1 = (x1 -  .5*len*dx) + w*dy;
+        var ty1 = (y1 -  .5*len*dy) - w*dx;
+        var qx3 = x2 + q*w*dy;
+        var qy3 = y2 - q*w*dx;
+        var qx4 = (x1 - .75*len*dx) + (1-q)*w*dy;
+        var qy4 = (y1 - .75*len*dy) - (1-q)*w*dx;
+
+        return ( "M " +  x1 + " " +  y1 +
+            " Q " + qx1 + " " + qy1 + " " + qx2 + " " + qy2 +
+            " T " + tx1 + " " + ty1 +
+            " M " +  x2 + " " +  y2 +
+            " Q " + qx3 + " " + qy3 + " " + qx4 + " " + qy4 +
+            " T " + tx1 + " " + ty1 );
+    }
 
 
 </script>
