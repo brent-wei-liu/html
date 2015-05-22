@@ -113,7 +113,7 @@
                                     <a href="t-pattern.html"> Model Training</a>
                                 </li>
                                 <li>
-                                    <a href="http://54.200.13.59:8081/temporal-pattern/"> Predict</a>
+                                    <a href="http://131.94.128.175:9202/temporal-pattern/"> Predict</a>
                                 </li>
                             </ul>
                             <!-- /.nav-second-level -->
@@ -129,7 +129,7 @@
                                     <a href="t-pattern.html"> t-Pattern Mining</a>
                                 </li>
                                 <li>
-                                    <a href="http://54.200.13.59:8081/temporal-pattern/"> Temporal Lag Mining</a>
+                                    <a href="http://131.94.128.175:9202/temporal-pattern/"> Temporal Lag Mining</a>
                                 </li>
                             </ul>
                             <!-- /.nav-second-level -->
@@ -174,24 +174,27 @@
                                 <label>Data Sources</label>
                                 <select multiple="" class="form-control" id="data_sources">
                                 </select>
+								<div class="form-group" style="padding:10px 0px 0px 0px;">
+								<label class="control-label">Data Set Name:</label>
+								<input id="dataSetsName" class="form-control" type="text" placeholder="Enter Data Set Name"/>
+								</div>
                         </div>
 
                         <div class="col-lg-3">
                                 <label>Data Sets</label>
-                                <select class="form-control">
-                                    <option>Huawei_log_1</option>
+                                <select id="subsetsList" class="form-control">
+                                    <!--<option>Huawei_log_1</option>
                                     <option>Huawei_log_2</option>
                                     <option>Huawei_log_3</option>
                                     <option>IBM_log_1</option>
-                                    <option>IBM_log_2</option>
+                                    <option>IBM_log_2</option>-->
                                     </select>
                         </div>
-                        <div class="col-lg-3">
+                        <div id="subsetInfo" class="col-lg-3">
                                             <p class="lead">Data Set Infomation</p>
-                                            <p><b>Start Time:</b> 2015/02/09 12:00:00 </p>    
-                                            <p><b>End   Time:</b> 2015/02/10 12:00:00 </p>    
-                                            <p><b>Data Sources:</b>source1.txt, source2.txt </p>    
-
+                                            <p><b>Start Time:</b></p>    
+                                            <p><b>End   Time:</b></p>    
+                                            <p><b>Data Sources:</b></p>    
                         </div>
                         </div> <!-- row -->
                         <div class="row" style="padding-top: 20px;">
@@ -199,13 +202,13 @@
                               <button type="submit" class="btn btn-primary" id='showDash'>Show Dashboard</button>
                               </div>
                               <div class="col-lg-3">
-                                <button type="submit" class="btn btn-primary">Save Data Sets</button>
+                                <button id="saveDataSets" type="submit" class="btn btn-primary">Save Data Sets</button>
                               </div>
                               <div class="col-lg-3">
-                                <button type="submit" class="btn btn-primary">Load Data Set</button>
+                                <button id="loadDataSets" type="submit" class="btn btn-primary">Load Data Set</button>
                               </div>
                               <div class="col-lg-3">
-                                <button type="submit" class="btn btn-primary">Delete Data Set</button>
+                                <button id="deleteDataSets" type="submit" class="btn btn-primary">Delete Data Set</button>
                               </div>
 
 
@@ -255,7 +258,7 @@
                                     <i class="fa fa-clock-o fa-5x"></i>
                                 </div>
                                 <div class="col-xs-9 text-right">
-                                    <div class="huge">24</div>
+                                    <div class="huge" id="monthCount">24</div>
                                     <div>Months!</div>
                                 </div>
                             </div>
@@ -271,7 +274,7 @@
                                     <i class="fa fa-support fa-5x"></i>
                                 </div>
                                 <div class="col-xs-9 text-right">
-                                    <div class="huge">13</div>
+                                    <div class="huge" id="totalSubsets"></div>
                                     <div>Data Sets!</div>
                                 </div>
                             </div>
@@ -658,95 +661,279 @@
     <script src="../bower_components/flot.tooltip/js/jquery.flot.tooltip.min.js"></script>
     <script src="../dist/js/jquery.datetimepicker.js"></script>
     <script src="../dist/multiselect/js/jquery.multi-select.js"></script>
-<script type="text/javascript">
-$(function() {
 
-    var host = "http://131.94.128.175";
-    var port = "9005"
-//    var host = "http://localhost";
-//    var port = "8000"
+    <script type="text/javascript">
+    $(function() {
 
-    $('#datetimepicker1').datetimepicker({
-        format:'YmdHis'
-    });
-//    $('#datetimepicker1').attr('disabled','true');
-    $('#datetimepicker2').datetimepicker({
-        format:'YmdHis'
-    } );
+        var host = "http://131.94.128.175";
+        var port = "9202"
 
-    $('#data_sources').multiSelect();
-    url = host + ":" + port + '/main/get_datasets';
-    $.getJSON(url, function(result){
-        $dataSources = $('#data_sources');
-        for( var i=0; i<result.length;i++){
-            $dataSources.multiSelect('addOption', { value: result[i]["sid"], text: result[i]["sid"] + "   " +result[i]["sname"], index: 0 });;
-        }
-    });
-    var logCountChart = Morris.Area({
-        element: 'morris-area-chart',
-        xkey: 'date',
-        ykeys: ['log_count'],
-        data : [],
-        labels: ['Total'],
-        pointSize: 2,
-        hideHover: 'auto',
-        resize: true
-    });
-
-    url = host+":"+port+"/main/overview/";
-    $.getJSON( url ,function(result){
-        $("#event_count").append(result['logCount']);
-        $("#host_count").append(result['hostCount']);
-    });
-
-    url = host+":"+port + "/main/date_count/20140101000000/20150101000000/";
-    $.getJSON( url ,function(data){
-        logCountChart.setData( data );
-    });
-
-    $('#showDash').click(function(){
-        start = $('#datetimepicker1').val();
-        end = $('#datetimepicker2').val();
-
-        if( start =="" ){
-            start = "-1";
-        }
-        if( end =="" ){
-            end = "-1"
-        }
-        var dataSources = "";
-        $('#data_sources option:selected').each(function(){
-            dataSources += this.value + ",";
-//            console.log(this.value);
-            
+        $('#datetimepicker1').datetimepicker({
+            format:'YmdHis'
         });
-         
-        url = host+":"+port+"/main/overview/"; 
-        if( dataSources != ""){
-            url += dataSources + "/";
-        }
-        $.getJSON( url ,function(result){
-            $("#event_count").empty();
-            $("#host_count").empty();
+    //    $('#datetimepicker1').attr('disabled','true');
+        $('#datetimepicker2').datetimepicker({
+            format:'YmdHis'
+        } );
 
+        $('#data_sources').multiSelect();
+        url = host + ":" + port + '/main/get_datasets';
+        $.getJSON(url, function(result){
+            $dataSources = $('#data_sources');
+            for( var i=0; i<result.length;i++){
+                $dataSources.multiSelect('addOption', { value: result[i]["sid"], text: result[i]["sid"] + " " +result[i]["sname"], index: 0 });;
+            }
+        });
+        var logCountChart = Morris.Area({
+            element: 'morris-area-chart',
+            xkey: 'date',
+            ykeys: ['log_count'],
+            data : [],
+            labels: ['Total'],
+            pointSize: 2,
+            hideHover: 'auto',
+            resize: true
+        });
+
+        url = host+":"+port+"/main/overview/";
+        $.getJSON( url ,function(result){
             $("#event_count").append(result['logCount']);
             $("#host_count").append(result['hostCount']);
         });
- 
-        url = host + ":" + port + "/main/date_count/"+ start +"/"+ end +"/";
-        if( dataSources != ""){
-            url += dataSources + "/";
-        }
+
+        url = host+":"+port + "/main/date_count/20140101000000/20150101000000/";
         $.getJSON( url ,function(data){
             logCountChart.setData( data );
         });
+		
+		url = host+":"+port + "/main/datasets_list/";
+        $.getJSON( url ,function(result){
+		    var innerHTML = "";
+            for(var i = 0; i < result.length; i++){
+				innerHTML += "<option value='"+result[i]["DatasetsName"]+"'>"+result[i]["DatasetsName"]+"</option>";	
+			}
+			$('#subsetsList').html(innerHTML);
+        });
+		
+		url = host+":"+port + "/main/datasets_list/";
+				$.getJSON( url ,function(result){
+				var innerHTML = "";
+				for(var i = 0; i < result.length; i++){
+					innerHTML += "<option value='"+result[i]["DatasetsName"]+"'>"+result[i]["DatasetsName"]+"</option>";	
+				}
+				$('#subsetsList').html(innerHTML);
+				$('#totalSubsets').html(result.length);
+				});
+		
+        $('#showDash').click(function(){
+            start = $('#datetimepicker1').val();
+            end = $('#datetimepicker2').val();
 
-        logCountChart.setData( [] );
+            if( start =="" ){
+                start = "-1";
+            }
+            if( end =="" ){
+                end = "-1"
+            }
+            var dataSources = "";
+            $('#data_sources option:selected').each(function(){
+                dataSources += this.value + ",";
+    //            console.log(this.value);
+                
+            });
+             
+            url = host+":"+port+"/main/overview/"; 
+            if( dataSources != ""){
+                url += dataSources + "/";
+            }
+            $.getJSON( url ,function(result){
+                $("#event_count").empty();
+                $("#host_count").empty();
+
+                $("#event_count").append(result['logCount']);
+                $("#host_count").append(result['hostCount']);
+				$("#monthCount").html("24");
+            });
+
+            url = host + ":" + port + "/main/date_count/"+ start +"/"+ end +"/";
+            if( dataSources != ""){
+                url += dataSources + "/";
+            }
+			
+			if( dataSources == ""){
+                if(start == "-1" || end == "-1"){
+					url = host+":"+port + "/main/date_count/20140101000000/20150101000000/";
+				}
+            }
+			
+            $.getJSON( url ,function(data){
+                logCountChart.setData( data );
+            });
+
+            logCountChart.setData( [] );
+        });
+		
+		$('#saveDataSets').click(function(){
+			start = $('#datetimepicker1').val();
+            end = $('#datetimepicker2').val();
+			var dataSetName = $('#dataSetsName').val();
+			
+			var nameExist = false;
+			
+			url = host+":"+port + "/main/datasets_list/";
+			$.getJSON( url ,function(result){
+				for(var i = 0; i < result.length; i++){
+					if(result[i]['DatasetsName'] == dataSetName){
+						nameExist = true;
+						break;
+					}else{
+						continue;
+					}
+				}
+				
+				if(nameExist == true){
+					alert("this name already exists!");
+				}else {
+					if( start =="" ){
+						start = "-1";
+					}
+					if( end =="" ){
+						end = "-1"
+					}
+					var dataSources = "";
+					$('#data_sources option:selected').each(function(){
+						dataSources += this.value + ",";
+					});
+					
+					if( dataSources == ""){
+						dataSources = "-1";
+					}
+					
+					url = host+":"+port+"/main/datasets_create/"+dataSetName+"/"+start+"/"+end+"/"+dataSources+"/";
+					$.getJSON( url ,function(result){
+						alert(result[0]["result"]);
+						
+						url = host+":"+port + "/main/datasets_list/";
+						$.getJSON( url ,function(result){
+						var innerHTML = "";
+						for(var i = 0; i < result.length; i++){
+							innerHTML += "<option value='"+result[i]["DatasetsName"]+"'>"+result[i]["DatasetsName"]+"</option>";	
+						}
+						$('#subsetsList').html(innerHTML);
+						$('#totalSubsets').html(result.length);
+						});
+					});
+				}	
+			});
+			
+            
+		});
+		
+		$('#loadDataSets').click(function(){
+			var subsetSelected = $('#subsetsList').val();
+			 url = host+":"+port + "/main/datasets_count/"+subsetSelected+"/";
+			 $.getJSON( url ,function(data){
+             logCountChart.setData( data );
+			  $("#event_count").empty();
+			  $("#event_count").append(data[0]['log_count']);
+			});
+			
+			var pieData = [];
+			var plotObj = $.plot(("#flot-pie-chart"), [], {
+				series: {
+					pie: {
+						show: true
+					}
+				},
+				grid: {
+					hoverable: true
+				},
+				tooltip: true,
+				tooltipOpts: {
+					content: "%p.0%, %s", // show percentages, rounding to 2 decimal places
+					shifts: {
+						x: 20,
+						y: 0
+					},
+					defaultTheme: false
+				}
+			});
+			url = "http://131.94.128.175:9202/main/datasets_logtypecount/"+subsetSelected+"/";
+			$.getJSON( url ,function(result){
+				$logType = $("#log_types");
+				$logType.html("");
+				for ( var i = 0; i < result.length; i++ ) {
+					var str = "<a href='#' class='list-group-item'>"
+							 +"<i class='fa fa-warning fa-fw'></i> " 
+							 +result[i]["LOGTYPE"]
+							 +"<span class='pull-right text-muted small'><em>" 
+							 +result[i]["log_count"] +"</em>"
+							 +"</span>"
+							 +"</a>";
+					$logType.append(str);
+					pieData.push({
+						label : result[i]["LOGTYPE"],
+						data : result[i]["log_count"]
+					}); 
+				}
+				plotObj.setData( pieData);
+				plotObj.draw();
+
+			});
+	
+			url = "http://131.94.128.175:9202/main/datasets_datasourceinfor/"+subsetSelected+"/";
+			$.getJSON( url ,function(result){
+				var innerHTML = "<p class='lead'>Data Set Infomation</p>";
+				innerHTML += "<p><b>Start Time: </b>"+result[result.length - 1]["starttime"]+"</p>";
+				innerHTML += "<p><b>End Time: </b>"+result[result.length - 1]["endtime"]+"</p>";
+				innerHTML += "<p><b>Data Sources: </b>";
+				for(var i = 0;i < result.length - 1; i++){
+					if(i == result.length - 2){
+						innerHTML += result[i]["datasource"];
+					}else{
+						innerHTML += result[i]["datasource"]+", ";
+					}				
+				}
+				innerHTML += "</p>";
+				$('#subsetInfo').html(innerHTML);
+				
+			});
+			
+			url = "http://131.94.128.175:9202/main/datasets_hostcount/"+subsetSelected+"/";
+			$.getJSON( url ,function(result){
+				$("#host_count").empty();
+				$("#host_count").append(result[0]['host_count']);
+			});
+			
+			url = "http://131.94.128.175:9202/main/datasets_monthscount/"+subsetSelected+"/";
+			$.getJSON( url ,function(result){
+				$("#monthCount").html(result[0]["monthcount"]);
+			});
+			
+		});
+		
+		$('#deleteDataSets').click(function(){
+			var subsetSelected = $('#subsetsList').val();
+			url = host+":"+port + "/main/datasets_delete/"+subsetSelected+"/";
+			$.getJSON( url ,function(result){
+				alert(result[0]["result"]);
+				url = host+":"+port + "/main/datasets_list/";
+				$.getJSON( url ,function(result){
+				var innerHTML = "";
+				for(var i = 0; i < result.length; i++){
+					innerHTML += "<option value='"+result[i]["DatasetsName"]+"'>"+result[i]["DatasetsName"]+"</option>";	
+				}
+				$('#subsetsList').html(innerHTML);
+				$('#totalSubsets').html(result.length);
+				});
+			});
+		});
+		
     });
-});
-</script>
+    </script>
 
     <script src="../js/flot-data.js"></script>
+    <script src="../js/subsets_general.js"></script>
 </body>
 
 </html>

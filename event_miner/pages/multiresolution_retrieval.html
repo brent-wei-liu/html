@@ -114,7 +114,7 @@
                                     <a href="t-pattern.html"> t-Pattern Mining</a>
                                 </li>
                                 <li>
-                                    <a href="http://54.200.13.59:8081/temporal-pattern/"> Temporal Lag Mining</a>
+                                    <a href="http://131.94.128.175:9202/temporal-pattern/"> Temporal Lag Mining</a>
                                 </li>
                             </ul>
                             <!-- /.nav-second-level -->
@@ -149,43 +149,48 @@
     <div class="form-group" style="padding:0px 0px 0px 20px;">
         <div class="checkbox">
             <label>
-                <input type="checkbox" checked="checked" value="">Select/Unselect All
+                <input id="chkSelectAll" type="checkbox" value="">Select/Unselect All
             </label>
         </div>
 
-        <div class="checkbox">
+        <div class="checkbox select_attr">
             <label>
-                <input type="checkbox" checked="checked" value="">log_id
+                <input id="log_id" type="checkbox" value="">log_id
             </label>
         </div>
-        <div class="checkbox">
+        <div class="checkbox select_attr">
             <label>
-                <input type="checkbox" checked="checked" value="">datetime
+                <input id="datetime" type="checkbox" value="">datetime
             </label>
         </div>
-        <div class="checkbox">
+        <div class="checkbox select_attr">
             <label>
-                <input type="checkbox" checked="checked" value="">type_id
+                <input id="type_id" type="checkbox" value="">type_id
             </label>
         </div>
-        <div class="checkbox">
+        <div class="checkbox select_attr">
             <label>
-                <input type="checkbox" checked="checked" value="">type_name
+                <input id="type_name" type="checkbox" value="">type_name
             </label>
         </div>
-        <div class="checkbox">
+        <div class="checkbox select_attr">
             <label>
-                <input type="checkbox" checked="checked"  value="">source_id
+                <input id="source_id" type="checkbox" value="">source_id
             </label>
         </div>
-        <div class="checkbox">
+        <div class="checkbox select_attr">
             <label>
-                <input type="checkbox" checked="checked" value="">source_name
+                <input id="source_name" type="checkbox" value="">source_name
             </label>
         </div>
-        <div class="checkbox">
+		<div class="checkbox select_attr">
             <label>
-                <input type="checkbox" checked="checked" value="">host_name
+                <input id="host_id" type="checkbox" value="">host_id
+            </label>
+        </div>
+        <div class="checkbox select_attr">
+            <label>
+                <input id="host_name" type="checkbox" value="">host_name
             </label>
         </div>
 
@@ -246,12 +251,12 @@
 
         <div class="form-group" style="padding:0px 0px 0px 0px;">
             <label class="control-label">Data Set Name:</label>
-            <input class="form-control" placeholder="Enter Data Set Name">
+            <input id="dataSetsName" class="form-control" placeholder="Enter Data Set Name">
         </div>
 
         <div class="form-group" style="padding:0px 0px 0px 0px;">
             <button type="button" class="btn btn-primary" id='query_logs'>Query Logs</button>
-            <button type="button" class="btn btn-primary">Save Data Sets</button>
+            <button type="button" class="btn btn-primary" id="saveDataSets">Save Data Sets</button>
         </div>
     </form>
   </div> <!-- panel body-->
@@ -263,24 +268,14 @@
 <div class="panel-heading">Logs</div>
 <div class="panel-body">
 
-<table id="logs_table" class="table table-striped table-bordered" cellspacing="0" width="100%">
-    <thead>
-        <tr>
-            <th>log_id</th>
-            <th>datetime</th>
-            <th>type_name</th>
-            <th>source_name</th>
-        </tr>
-    </thead>
-    <tbody>
-    </tbody>
+<table id="logs_table" class="table table-striped table-bordered table-hover" cellspacing="0" width="100%">
 </table>
 </div>
 </div> <!-- panel-default -->
 
 
 <div class="panel panel-default">
-<div class="panel-heading">Log Detail</div>
+<div class="panel-heading" id="logDetailHead">Log Detail</div>
 <div class="panel-body">
     <p id="log_raw">Nov 17 2014 14:35:02-04:00 Sohar-PE-CORE-NE80E-1 %%01BFD/6/CRTSESS(l):The BFD session has been created successfully. (Discriminator=10949, ConfigurationName=dyn_10949, Applications=LSPM | LDP | L2VPN | OAM_MANAGER, PeerIp=62.231.255.91, SessionType=D_LDP_LSP, BindIFName=Tunnel0/0/18, BindVpnName=, SourceIp=62.231.255.242)</p>
 </div>
@@ -317,9 +312,28 @@
     <script src="../dist/js/dataTables.bootstrap.js"></script> 
     <!-- DataTables -->
 <script type="text/javascript">
+
 $(function() {
+
+	$("#chkSelectAll").change(function(){
+		$(".select_attr input").prop("checked", this.checked);
+		if($(this).prop("checked") == true){
+			$(".select_attr input").attr("value","1");
+		}else{
+			$(".select_attr input").attr("value","0");
+		}
+	});
+
+	$(".select_attr input").change(function(){
+		if($(this).prop("checked") == true){
+			$(this).attr("value","1");
+		}else{
+			$(this).attr("value","0");
+		}
+	});
+	
     var host = "http://131.94.128.175";
-    var port = "9005";
+    var port = "9202";
     $('#datetimepicker1').datetimepicker({
         format:'YmdHis'
     });
@@ -331,34 +345,13 @@ $(function() {
     $('#data_sources').multiSelect();
     $('#data_types').multiSelect();
     $('#hosts').multiSelect();
-    url = host+":"+port+main/get_datasets";
+    url = host + ":" + port + '/main/get_datasets';
     $.getJSON(url, function(result){
         $dataSources = $('#data_sources');
         for( var i=0; i<result.length;i++){
             $dataSources.multiSelect('addOption', { value: result[i]["sid"], text: result[i]["sid"] + "   " +result[i]["sname"], index: 0 });;
         }
     });
-
-    var data = [
-    {
-        "log_id":       "Tiger Nixon",
-        "datetime":   "System Architect",
-        "type_name":     "$3,120",
-        "source_name": "2011/04/25",
-        "office":     "Edinburgh",
-        "extn":       "5421"
-    },
-    {
-        "log_id":       "Garrett Winters",
-        "datetime":   "Director",
-        "type_name":     "$5,300",
-        "source_name:": "2011/07/25",
-        "office":     "Edinburgh",
-        "extn":       "8422"
-    }
-    ];
-
-
 
     url = host + ":" + port + '/main/log_type/';
     $.getJSON(url, function(result){
@@ -380,58 +373,184 @@ $(function() {
 
         } 
     });
+
     url = host+":"+port+"/main/get_events/-1/-1/-1/16,/";
     $.getJSON( url ,function(result){
         $logTable = $('#logs_table');
+		var innerHTML = "<thead><tr><th>log_id</th><th>datetime</th><th>type_name</th><th>source_name</th></tr></thead>";
+		innerHTML += "<tbody>";
         for(var i=0; i<result.length; i++ ){
             var r = result[i];
-            $logTable.append("<tr><td>" + r["log_id"] + "</td><td>"+r["datetime"]+
-                                "</td><td>" + r["type_name"] + "</td><td>" + r["source_name"] +
-                                "</td></tr>");
+			innerHTML += "<tr id=" + r["log_id"] + "><td>" + r["log_id"] + "</td>"
+					   + "<td>" + r["datetime"] + "</td>"
+					   + "<td>" + r["type_name"] + "</td>"
+					   + "<td>" + r["source_name"] +"</td></tr>";
 
         }
-        var table = $('#logs_table').dataTable( );
+		
+		innerHTML +="</tbody>";
+		$logTable.html(innerHTML);
+		
+		$("#logs_table tbody tr").click(function(){
+			var id = $(this).children().first().text();
+			$("#logDetailHead").html("Log Detail - "+id)
+			 url = host+":"+port+"/main/show_log/"+id;
+			 $.getJSON( url ,function(result){
+				$("#log_raw").html(result[0]["logdetail"]);
+			 });
+		});
+		
+        $('#logs_table').DataTable( );
+		
     });
 
+	
     $('#query_logs').click(function(){
+	
+		var attrList = [];
+		$(".select_attr input").each(function(){
+			if($(this).attr("value") == 1){
+				attrList.push($(this).attr("id"));
+			}
+		});
+		
+		//alert(attrList);
+		
+		if(attrList.length == 0){
+			alert("please select attributes!");
+		}else{
+			$('#logs_table').DataTable( ).destroy();
+			$('#logs_table tbody').html("");
+			
+			start = $('#datetimepicker1').val();
+			end = $('#datetimepicker2').val();
 
-        start = $('#datetimepicker1').val();
-        end = $('#datetimepicker2').val();
+			if( start =="" )  start = "-1";
+		  
+			if( end =="" ){
+				end = "-1"
+			}
+			var dataSources = "";
+			$('#data_sources option:selected').each(function(){
+				dataSources += this.value + ",";
+	//            console.log(this.value);
 
-        if( start =="" )  start = "-1";
-      
-        if( end =="" ){
-            end = "-1"
-        }
-        var dataSources = "";
-        $('#data_sources option:selected').each(function(){
-            dataSources += this.value + ",";
-//            console.log(this.value);
+			});
+			
+			//var dataTypesSelected = "";
+			
+			//var hosts = "";
+			//$('#hosts option:selected').each(function(){
+			//	hosts += this.value + ",";
+			//});
 
-        });
-
-        url = host+":"+port+"/main/get_events/"+start+"/"+end+"/-1/";
-        if( dataSources != ""){
-            url += dataSources + "/";
-        }
-        $.getJSON( url ,function(result){
-            $logTable = $('#logs_table');
-            for(var i=0; i<result.length; i++ ){
-                var r = result[i];
-                $logTable.append("<tr><td>" + r["log_id"] + "</td><td>"+r["datetime"]+
-                                "</td><td>" + r["type_name"] + "</td><td>" + r["source_name"] +
-                                "</td><td>" + r["host_name"] +
-                                "</td></tr>");
-            }
-
-        });
-
-            
+			url = host+":"+port+"/main/get_events/"+start+"/"+end+"/-1/";
+			if( dataSources != ""){
+				url += dataSources + "/";
+			}
+			
+			//if( dataTypesSelected != ""){
+			//	url += dataTypesSelected + "/";
+			//}else{
+			//	url += "-1/";
+			//}
+			//if( hosts != ""){
+			//	url += hosts + "/";
+			//}else{
+			//	url += "-1/";
+			//}
+			$.getJSON( url ,function(result){
+				$logTable = $('#logs_table');
+				var innerHTML = "<thead><tr>";
+				
+				for(var i = 0; i < attrList.length; i++){
+					innerHTML += "<th>" + attrList[i] + "</th>";
+				}
+				
+				innerHTML += "</tr></thead>";
+				
+				innerHTML += "<tbody>";
+				for(var i=0; i<result.length; i++ ){
+					var r = result[i];
+					innerHTML += "<tr id=" + r["log_id"] + ">";
+					for(var j = 0; j < attrList.length; j++){
+						innerHTML += "<td>" + r[attrList[j]] + "</td>";
+					}
+					
+					innerHTML += "</tr>";
+				}
+				innerHTML +="</tbody>";
+				$logTable.html(innerHTML);
+			
+				$("#logs_table tbody tr").click(function(){
+					var id = $(this).attr("id");
+					$("#logDetailHead").html("Log Detail - "+id)
+					 url = host+":"+port+"/main/show_log/"+id;
+					 $.getJSON( url ,function(result){
+						$("#log_raw").html(result[0]["logdetail"]);
+					 });
+				});
+				
+				$('#logs_table').DataTable( );
+				
+			});
+		}
 
     });
 
-});
+	
+	$("#saveDataSets").click(function(){
+			start = $('#datetimepicker1').val();
+			end = $('#datetimepicker2').val();
 
+			var dataSetName = $('#dataSetsName').val();
+			
+			if(dataSetName == ""){
+				alert("please enter data set name!");
+			}else{
+				var nameExist = false;
+			
+				url = host+":"+port + "/main/datasets_list/";
+				$.getJSON( url ,function(result){
+					for(var i = 0; i < result.length; i++){
+						if(result[i]['DatasetsName'] == dataSetName){
+							nameExist = true;
+							break;
+						}else{
+							continue;
+						}
+					}
+					if(nameExist == true){
+						alert("this name already exists!");
+					}else {
+						if( start =="" ) {
+							start = "-1";
+						}
+
+						if( end =="" ){
+							end = "-1";
+						}
+						var dataSources = "";
+						$('#data_sources option:selected').each(function(){
+							dataSources += this.value + ",";
+				//            console.log(this.value);
+
+						});
+
+						url = host+":"+port+"/main/datasets_create_mr/"+dataSetName+"/"+start+"/"+end+"/-1/";
+						if( dataSources != ""){
+							url += dataSources + "/";
+						}
+						$.getJSON( url ,function(result){
+							alert(result[0]["result"]);
+						});
+					}
+				});
+			}
+			
+			
+	});
+});
 </script>
 
 </body>

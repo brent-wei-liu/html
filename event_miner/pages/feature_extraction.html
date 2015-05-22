@@ -10,18 +10,12 @@
     <meta name="author" content="">
 
     <title>Log Analyzer</title>
-
     <!-- Bootstrap Core CSS -->
     <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <!-- MetisMenu CSS -->
     <link href="../bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet">
-
-
     <!-- Custom CSS -->
     <link href="../dist/css/sb-admin-2.css" rel="stylesheet">
-
-
     <!-- Custom Fonts -->
     <link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
@@ -31,8 +25,6 @@
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-  <script type="text/javascript" src="../vis/vis.js"></script>
-  <link href="../vis/vis.css" rel="stylesheet" type="text/css" />
 
   <style type="text/css">
 
@@ -53,30 +45,72 @@
       height: 100%;
       border: 1px solid #d3d3d3;
     }
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
 
-    #mynetwork {
-      float: left;
-      width: 100%;
-      height: 100%;
-      border: 1px solid #d3d3d3;
-      box-sizing: border-box;
-      -moz-box-sizing: border-box;
-      overflow: hidden;
-    }
+.bar {
+  fill: steelblue;
+}
+.x.axis path {
+  display: inline;
+  marker-end:url(#triangle);
+  stroke-width:2;
+}
+.x.axis line .x.axis path{
+  fill: none;
+  stroke: #000;
+}
 
-    textarea.example {
-      display: none;
-    }
+.x.axis path{
+  stroke:"red";
+  stroke-width:"2";
+}
+.grid .tick {
+    stroke: lightgrey;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+}
+.grid path {
+          stroke-width: 0;
+}
+
+.brace {
+    stroke: #2968AA;
+    stroke-width: 2px;
+    fill: none;
+}
+.infotext {
+    font-size: 12px;
+}
+.x.axiscontext path {
+  display: inline;
+  stroke-width:1;
+}
+.x.axiscontext line ,.x.axiscontext path{
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.brush .extent {
+    stroke: #fff;
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+}
+
   </style>
 
 
 </head>
 
-<body onload="drawExample('example1')">
+<body>
 
     <div id="wrapper">
 
-        <!-- Navigation -->
         <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -86,29 +120,20 @@
                     <span class="icon-bar"></span>
                 </button>
                 <a class="navbar-brand" href="index.html">Log Analyzer v1.0</a>
-            </div>
-            <!-- /.navbar-header -->
-
+            </div>     <!-- /.navbar-header -->
             <ul class="nav navbar-top-links navbar-right">
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                         <i class="fa fa-user fa-fw"></i>  <i class="fa fa-caret-down"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-user">
-                        <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
-                        </li>
-                        <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
-                        </li>
+                        <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a></li>
+                        <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a></li>
                         <li class="divider"></li>
-                        <li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
-                        </li>
-                    </ul>
-                    <!-- /.dropdown-user -->
-                </li>
-                <!-- /.dropdown -->
-            </ul>
-            <!-- /.navbar-top-links -->
-
+                        <li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
+                    </ul>  <!-- /.dropdown-user -->
+                </li>  <!-- /.dropdown -->
+            </ul> <!-- /.navbar-top-links -->
             <div class="navbar-default sidebar" role="navigation">
                 <div class="sidebar-nav navbar-collapse">
                     <ul class="nav" id="side-menu">
@@ -120,297 +145,414 @@
                                     <i class="fa fa-search"></i>
                                 </button>
                             </span>
-                            </div>
-                            <!-- /input-group -->
+                            </div>  <!-- /input-group -->
                         </li>
+                        <li><a href="tables.html"><i class="fa fa-table fa-fw"></i> DataSource</a></li>
+                      <li><a href="event_extraction.html"><i class="fa fa-magic fa-fw"></i> Event Extraction</a></li>
+                        <li><a href="index.html"><i class="fa fa-dashboard fa-fw"></i> Event Dashboard</a></li>
                         <li>
-                            <a href="tables.html"><i class="fa fa-table fa-fw"></i> DataSource</a>
+                            <a href="#"><i class="fa fa-wrench fa-fw"></i> Failure Prediction<span class="fa arrow"></span></a>
+                            <ul class="nav nav-second-level">
+                                <li><a href="feature_extraction.html"> Feature Extraction</a></li>
+                                <li><a href="t-pattern.html"> Model Training</a></li>
+                                <li><a href="http://54.200.13.59:8081/temporal-pattern/"> Predict</a></li>
+                            </ul>   <!-- /.nav-second-level -->
                         </li>
-                        <li>
-                            <a href="#"><i class="fa fa-magic fa-fw"></i> Event Extraction</a>
-                        </li> 
 
-
-                        <li>
-                            <a href="index.html"><i class="fa fa-dashboard fa-fw"></i> Event Dashboard</a>
-                        </li>
                         <li>
                             <a href="#"><i class="fa fa-wrench fa-fw"></i> Event Mining<span class="fa arrow"></span></a>
                             <ul class="nav nav-second-level">
-                                <li>
-                                    <a href="panels-wells.html"> Event Summarization</a>
-                                </li>
-                                <li>
-                                    <a href="t-pattern.html"> t-Pattern Mining</a>
-                                </li>
-                                <li>
-                                    <a href="notifications.html"> Temporal Log Mining</a>
-                                </li>
-                                <li>
-                                    <a href="typography.html"> Rare Event Root Cause Mining</a>
-                                </li>
-                            </ul>
-                            <!-- /.nav-second-level -->
+                                <li><a href="event_summarization.html"> Event Summarization</a> </li>
+                                <li><a href="t-pattern.html"> t-Pattern Mining</a></li>
+                                <li><a href="http://54.200.13.59:8081/temporal-pattern/"> Temporal Lag Mining</a></li>
+                            </ul>  <!-- /.nav-second-level -->
                         </li>
                         <li>
-                            <a href="forms.html"><i class="fa fa-paw fa-fw"></i> Multiresolution Retrieval</a>
+                            <a href="multiresolution_retrieval.html"><i class="fa fa-paw fa-fw"></i> Multiresolution Retrieval</a>
                         </li>
                         <li>
-                            <a href="forms.html"><i class="fa fa-edit fa-fw"></i> Dynamic Query Form</a>
+                            <a href="dynamic_query_form.html"><i class="fa fa-edit fa-fw"></i> Dynamic Query Form</a>
                         </li>
                     </ul>
-                </div>
-                <!-- /.sidebar-collapse -->
-            </div>
-            <!-- /.navbar-static-side -->
+                </div><!-- /.sidebar-collapse -->
+            </div> <!-- /.navbar-static-side -->
         </nav>
 
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">Event Summarization</h1>
+                    <h1 class="page-header">Feature Extraction</h1>
                 </div>
                 <!-- /.col-lg-12 -->
             </div>
+            <!-- /.row -->
             <div class="row">
-            
-            <div class="col-lg-5">
+                <div class="panel panel-default">
+                  <div class="panel-heading">Data Sets Selector</div>
+                  <div class="panel-body">
+                        <div class="row">
+                        <div class="col-lg-2">
+                                    <label class="control-label">Window Size:</label>
+                                    <div >
+                                    <input id="datetimepicker1" type="text" >
+                                    </div>
+                        </div>
 
-<div class="panel panel-default">
-<div class="panel-heading">Parameters</div>
-<div class="panel-body">
+                        <div class="col-lg-2">
+                                <label>Data Sets</label>
+                                <select class="form-control">
+                                    <option>Huawei_log_1</option>
+                                    <option>Huawei_log_2</option>
+                                    <option>Huawei_log_3</option>
+                                    <option>IBM_log_1</option>
+                                    <option>IBM_log_2</option>
+                                    </select>
+                        </div>
+                        <div class="col-lg-3">
+                                            <p class="lead">Data Set Infomation</p>
+                                            <p><b>Start Time:</b> 2015/02/09 12:00:00 </p>
+                                            <p><b>End   Time:</b> 2015/02/10 12:00:00 </p>
+                                            <p><b>Data Sources:</b>source1.txt, source2.txt </p>
 
-<form role="form">
-<div class="form-group">
-    <label>Select Data Sets:</label>
-<select class="form-control">
-    <option>Huawei_log_1</option>
-    <option>Huawei_log_2</option>
-    <option>Huawei_log_3</option>
-    <option>IBM_log_1</option>
-    <option>IBM_log_2</option>
-</select>
-</div>
-</from>
-
-
-<label>Select Label Event Type Set:</label>
-<div class="table-responsive">
-<table class="table table-striped table-bordered table-hover">
-    <thead>
-        <tr>
-            <th></th>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Start Time</th>
-            <th>Running Time</th>
-            <th>Staus</th>
-        </tr>
-    </thead>
-    <tbody id="patterns">
-    <tr><td class="bs-checkbox"><input name="radioName" type="checkbox"></td><td>0</td><td>Huawei_log_1</td><td>10:22 AM 8/1/2014</td><td>10 hours</td><td>Ready</td></tr>
-    <tr><td class="bs-checkbox"><input name="radioName" type="checkbox"></td><td>1</td><td>Huawei_log_2</td><td>11:12 AM 8/3/2014</td><td>2 hours</td><td>Running</td></tr>
-    <tr><td class="bs-checkbox"><input name="radioName" type="checkbox"></td><td>2</td><td>IBM_log_1</td><td>N/A</td><td>N/A</td><td>Not Yet</td></tr>
-    <tr><td class="bs-checkbox"><input name="radioName" type="checkbox"></td><td>0</td><td>Huawei_log_3</td><td>14:22 AM 1/1/2015</td><td>10 hours</td><td>Ready</td></tr>
-    <tr><td class="bs-checkbox"><input name="radioName" type="checkbox"></td><td>1</td><td>Huawei_log_4</td><td>15:22 AM 2/2/2015</td><td>2 hours</td><td>Running</td></tr>
-    <tr><td class="bs-checkbox"><input name="radioName" type="checkbox"></td><td>2</td><td>IBM_log_2</td><td>N/A</td><td>N/A</td><td>Not Yet</td></tr>
-
-    </tbody>
-</table>
-</div>
-
-<form role="form">
-<div class="form-group">
-    <label>Select Pattern Type:</label>
-    <div class="checkbox">
-        <label> <input type="checkbox" value="">Coralation</label>
-    </div>
-    <div class="checkbox">
-        <label> <input type="checkbox" value="">Periodic</label>
-    </div>
-
-    </div>
-</from>
-<div class="row">
-    <div class="col-lg-3">
-    <button id="btn_plot" type="submit" class="btn btn-primary">Plot Pattern</button>
-    </div>
-    <div class="col-lg-3">
-    <button id="btn_plot" type="submit" class="btn btn-primary">Start Mining</button>
-    </div>
-    <div class="col-lg-3">
-    <button id="btn_plot" type="submit" class="btn btn-primary">Stop Mining</button>
-    </div>
+                        </div>
+                        </div> <!-- row -->
+                        <div class="row" style="padding-top: 20px;">
+                              <div class="col-lg-2">
+                              <button type="submit" class="btn btn-primary" id='showDash'>Extract Features</button>
+                              </div>
+                              <div class="col-lg-2">
+                                <button type="submit" class="btn btn-primary">Save Feature Set</button>
+                              </div>
+                              <div class="col-lg-2">
+                                <button type="submit" class="btn btn-primary">Load Feature Set</button>
+                              </div>
+                              <div class="col-lg-2">
+                                <button type="submit" class="btn btn-primary">Delete Feature Set</button>
+                              </div>
 
 
-</div>
-</div>
-</div> <!-- panel-default -->
+                        </div> <!-- row -->
 
-            </div>
-            <div class="col-lg-7">
+                  </div> <!-- panel body-->
+                  </div> <!-- panel -->
 
-        <button id="draw">Draw</button>
-        <span id="error"></span>
-      <div id="mynetwork" style="height: 700px;"></div>
-      <textarea id="data"></textarea>
-
-</table>
-
-            </div> <!-- col -->
             </div> <!-- row -->
+            <div class="row">
+                <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-bar-chart-o fa-fw"></i> Feature Set Visualization
+                        </div>
+                        <!-- /.panel-heading -->
+                        <div class="panel-body">
+            <div id="feature_bar_chart" ></div>
+                        </div>
+                        <!-- /.panel-body -->
+                 </div> <!-- /.panel -->
+            </div><!-- row -->
+
         </div>
         <!-- /#page-wrapper -->
 
     </div>
     <!-- /#wrapper -->
 <script type="text/javascript">
-  var network = null;
-  var data = null;
+</script>
+    <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../bower_components/metisMenu/dist/metisMenu.min.js"></script>
+    <script src="../dist/js/sb-admin-2.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+var svg_width = 1000;
+var margin = {top: 20, right: 190, bottom: 30, left: 40},
+    margin2 = {top: 40, right: 10, bottom: 20, left: 0},
+    chart_width = svg_width - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom,
+    height2 = 150 - margin2.top - margin2.bottom;
+var durationWidth = 90,
+    durationPadding = 20;
+var intervalWidth = 15;
+var total_height = height + margin.top + margin.bottom + height2 + margin2.top + margin2.bottom;
+console.log(chart_width);
 
-  var btnDraw = document.getElementById('draw');
-  btnDraw.style.display = 'none';
-  var txtData = document.getElementById('data');
-  txtData.style.display = 'none';
-  var txtError = document.getElementById('error');
-  btnDraw.onclick = draw;
+var xScale_focus = d3.scale.linear();
+var xScale_context = d3.scale.linear().range([0, chart_width]);
+var xScale_duration = d3.scale.ordinal().range([0,durationWidth]);
 
-  // resize the network when window resizes
-  window.onresize = function () {
-    network.redraw()
-  };
+var y_focus = d3.scale.linear().range([height, 0]);
+var y_context = d3.scale.linear().range([height2, 0]);
 
-  function destroy() {
-    if (network !== null) {
-      network.destroy();
-      network = null;
+var color = d3.scale.ordinal().range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#ff8c00"]);
+
+var xAxis_focus = d3.svg.axis().scale(xScale_focus).tickSize(6,0).ticks(30).orient("bottom");
+var xAxis_context = d3.svg.axis().scale(xScale_context).tickSize(6,0).ticks(10).orient("bottom");
+var yAxis = d3.svg.axis().scale(y_focus).orient("left").tickFormat(d3.format(".2s"));
+
+var svg = d3.select("#feature_bar_chart").append("svg")
+        .attr("width", chart_width + margin.left + margin.right)
+        .attr("height", total_height )
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    svg.append('marker')
+      .attr('id', "triangle")
+      .attr('markerHeight', 10)
+      .attr('markerWidth', 4)
+      .attr('markerUnits', 'strokeWidth')
+      .attr('orient', 'auto')
+      .attr('refX', 0)
+      .attr('refY', 5)
+      .attr('viewBox', "0 0 10 10")
+    .append('svg:path')
+      .attr('d', "M 0 0 L 10 5 L 0 10 z");
+
+//brush
+var brush = d3.svg.brush().x(xScale_context).on("brush", brushed);
+
+var h = height+margin2.top;
+var context_svg = svg.append("g").attr("transform", "translate(" + margin2.left + "," + h + ")");
+
+var durations_svg;
+var x_axis_focus_svg;
+var durations_number;
+
+d3.csv("data.csv", function(error, data) {
+  durations_number = data.length;
+  var ageNames = d3.keys(data[0]).filter(function(key) { return key !== "StartTime" && key !== "hasFailure"; });
+  var parseDate = d3.time.format("%b %e %H:%M").parse;
+  data.forEach(function(d) {
+//    console.log(d["StartTime"]);
+//    console.log(parseDate(d["StartTime"]));
+    d.StartTime = parseDate(d["StartTime"]);
+    d.ages = ageNames.map(function(name) { return {name: name, value: +d[name],"hasFailure":d["hasFailure"]}; });
+    d.hasFailure = +d["hasFailure"];
+    d.context = +d["Current Window"];
+  });
+
+//  console.log("width:"+ chart_width + " band_width:" + durationWidth);
+  var band_width_context = chart_width / data.length;
+//  xScale_focus.domain(d3.extent(data.map(function(d,index) { return index; })));
+
+  var actural_width = durationWidth*(data.length - 1) + durationPadding*data.length;
+  xScale_focus.domain([0, data.length]).range([0,actural_width]);
+  xScale_duration.domain(ageNames).rangeRoundBands([0, durationWidth]);
+  y_focus.domain([0, d3.max(data, function(d) { return d3.max(d.ages, function(d) { return d.value; }); })]);
+
+  //brush
+  xScale_context.domain(xScale_focus.domain());
+  y_context.domain([0, d3.max(data, function(d) { return d.context })]);
+  var h = height + 1;
+  x_axis_focus_svg = svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + h + ")")
+      .call(xAxis_focus);
+
+
+  var y_axis_svg = svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+
+    y_axis_svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Event Count");
+
+    y_axis_svg.selectAll(".tick")
+        .append("path")
+          .attr("class","y grid")
+          .attr("d", function(d,index){ return "M0 "+0+"L"+chart_width+" "+0})
+          .attr("fill","none")
+          .attr("stroke","gray")
+          .attr("stroke-width", "1")
+          .attr("opacity", "0.2");
+
+
+
+  durations_svg = svg.selectAll(".duration")
+      .data(data)
+    .enter().append("g")
+      .attr("class", "duration")
+      .attr("transform", function(d,i) { var xs =  xScale_focus(i) ; return "translate(" + xs + ",0)"; })
+    .attr("fill-opacity", function(d,i){ x=xScale_focus(i);  if(x<0 ||x >= (chart_width-100) )  return 0; return 1;})
+    .attr("stroke-opacity", function(d,i){ x=xScale_focus(i);  if(x<0 ||x >= (chart_width-100) )  return 0; return 1;});
+
+  var interval =   durations_svg.selectAll("rect")
+      .data(function(d) { return d.ages; })
+    .enter().append("rect")
+      .attr("width", function(d) { return intervalWidth;})
+      .attr("x", function(d, index) {
+                    if(index==4)  return xScale_duration(d.name) + 0.1*xScale_duration.rangeBand();
+                    return xScale_duration(d.name); })
+      .attr("y", function(d) { return y_focus(d.value); })
+      .attr("height", function(d) { console.log("height:"+height+" y_focus(d.value)"+ y_focus(d.value));return height - y_focus(d.value); })
+      .style("fill", function(d) { return color(d.name); });
+
+
+      durations_svg.selectAll(".point").
+          data(function(d) { return d.ages; }).
+          enter().append("path").
+          filter(function(d, index) {  if(index==4)  return true;   return false; }).
+          attr("class","point").
+          attr("d", d3.svg.symbol().type("triangle-down")).
+          attr("transform", function(d) {
+                                var x_v = xScale_duration(d.name) + xScale_duration.rangeBand()/2 + 2;
+                                var y_v = y_focus(d.value) - 5;
+                                return "translate(" + x_v+ "," + y_v + ")"; }).
+          attr("fill", function(d) { if(d["hasFailure"]==1 ) return "red";
+                                     else return "lightgray"});
+
+      durations_svg.filter(function(d, index) {  if(index==0)  return false;   return true; })
+          .append("path")
+          .attr("d", function(){ var m = 0.2*xScale_duration.rangeBand(); return "M-" + m + " 0 L-" + m + " " + height})
+          .attr("stroke","gray")
+          .attr("stroke-width", "1")
+          .attr("fill","none")
+          .attr("opacity", "0.8");
+
+    updateFocus = function(){
+        durations_svg.transition().duration(500)
+           .attr('transform', function(d,i) { return "translate("+xScale_focus(i)+")"} )
+           .attr("fill-opacity", function(d,i){ x=xScale_focus(i);  if(x<0 ||x >= (chart_width-100) )  return 0; return 1;})
+    .attr("stroke-opacity", function(d,i){ x=xScale_focus(i);  if(x<0 ||x >= (chart_width-100) )  return 0; return 1;});
+
+        x_axis_focus_svg.call(xAxis_focus);
     }
-  }
 
-  // parse and draw the data
-  function draw () {
-    destroy();
-    try {
-      txtError.innerHTML = '';
+d3.select("#left").on("click", function(){
+    xScale_focus.domain([xScale_focus.domain()[0] - 1, xScale_focus.domain()[1] - 1]);
+    updateFocus();
+    console.log("left xScale_focus.domain=["+xScale_focus.domain()+"]");
+});
 
-      // Provide a string with data in DOT language
-      data = {
-        dot: txtData.value
-      };
+d3.select("#right").on("click", function(){
+    xScale_focus.domain([xScale_focus.domain()[0] + 1, xScale_focus.domain()[1] + 1]);
+    updateFocus();
+    console.log("right xScale_focus.domain=["+xScale_focus.domain()+"]");
+});
 
-      // create a network
-      var container = document.getElementById('mynetwork');
-      var options = {};
-      network = new vis.Network(container, data, options);
+    var legend = svg.selectAll(".legend")
+          .data(ageNames.slice())
+        .enter().append("g")
+          .filter(function(d, index) {  if(index==5)  return false;   return true; })
+          .attr("class", "legend")
+          .attr("transform", function(d, i) { return "translate(100," + i * 20 + ")"; });
+
+    legend.append("rect")
+          .attr("x", chart_width - 18)
+          .attr("width", 18)
+          .attr("height", 18)
+          .style("fill", color);
+
+    legend.append("text")
+          .attr("x", chart_width - 24)
+          .attr("y", 9)
+          .attr("dy", ".35em")
+          .style("text-anchor", "end")
+          .text(function(d) { return d; });
+
+
+
+    var brace_x =  chart_width + margin.right - 87;
+    var braceGroup = svg.append("g").attr("transform", "translate("+ brace_x+", 0)");
+    braceGroup.append("path")
+          .attr("class", "brace")
+          .attr("d", makeCurlyBrace(0, 78, 0, 0, 20, 0.55));
+
+    var braceLabelGroup = braceGroup.append("g")
+          .attr("transform", "translate(22, 38)");
+
+        braceLabelGroup.append("text")
+          .attr("class", "infotext")
+          .attr("transform", "translate(0, 0)")
+          .text("observation");
+        braceLabelGroup.append("text")
+          .attr("class", "infotext")
+          .attr("transform", "translate(0, 10)")
+          .text("period");
+
+
+
+    //brush
+    var context_bar_width = 10;
+
+//    console.log(xScale_context.domain());
+//    console.log(xScale_context(xScale_context.domain()[0]));
+
+    context_svg.selectAll("rect")
+        .data(data)
+      .enter().append("rect")
+        .attr("x", function(d,i) { return xScale_context(i);  })
+        .attr("y", function(d) { return y_context(d.context); })
+        .attr("width", context_bar_width)
+        .attr("height", function(d) {return height2 - y_context(d.context); })
+        .style("fill", function(d){  if(d["hasFailure"]==1 ) return "red";
+                                     else return "black"});
+
+    context_svg.append("g")
+        .attr("class", "x axiscontext")
+        .attr("transform", "translate(0," + height2 + ")")
+        .call(xAxis_context);
+
+    context_svg.append("g")
+        .attr("class", "x brush")
+        .call(brush)
+      .selectAll("rect")
+        .attr("y", -6)
+        .attr("height", height2 + 7);
+});
+
+//brush
+function brushed() {
+
+  var x = brush.extent()[0];
+  xScale_focus.domain(brush.empty() ? xScale_context.domain() : [x,x+durations_number] );
+//console.log(brush.extent());
+/*  durations_svg.attr("transform", function(d) { var xs =  x0(d.State);
+                                        console.log(d);
+                                        return "translate(" + xs + ",0)"; });
+
+*/
+//  durations_svg.forEach(function(s){  console.log(s); s.attr("width",20); });
+//  durations_svg.attr("transform",function(d){ console.log(x2(d.State));return "translate(" + x2(d.State) + ",0)";});
+  updateFocus();
+  //x_axis_focus_svg.call(xAxis_focus);
+
+}
+function makeCurlyBrace(x1,y1,x2,y2,w,q)
+    {
+        //Calculate unit vector
+        var dx = x1-x2;
+        var dy = y1-y2;
+        var len = Math.sqrt(dx*dx + dy*dy);
+        dx = dx / len;
+        dy = dy / len;
+
+        //Calculate Control Points of path,
+        var qx1 = x1 + q*w*dy;
+        var qy1 = y1 - q*w*dx;
+        var qx2 = (x1 - .25*len*dx) + (1-q)*w*dy;
+        var qy2 = (y1 - .25*len*dy) - (1-q)*w*dx;
+        var tx1 = (x1 -  .5*len*dx) + w*dy;
+        var ty1 = (y1 -  .5*len*dy) - w*dx;
+        var qx3 = x2 + q*w*dy;
+        var qy3 = y2 - q*w*dx;
+        var qx4 = (x1 - .75*len*dx) + (1-q)*w*dy;
+        var qy4 = (y1 - .75*len*dy) - (1-q)*w*dx;
+
+        return ( "M " +  x1 + " " +  y1 +
+            " Q " + qx1 + " " + qy1 + " " + qx2 + " " + qy2 +
+            " T " + tx1 + " " + ty1 +
+            " M " +  x2 + " " +  y2 +
+            " Q " + qx3 + " " + qy3 + " " + qx4 + " " + qy4 +
+            " T " + tx1 + " " + ty1 );
     }
-    catch (err) {
-      // set the cursor at the position where the error occurred
-      var match = /\(char (.*)\)/.exec(err);
-      if (match) {
-        var pos = Number(match[1]);
-        if(txtData.setSelectionRange) {
-          txtData.focus();
-          txtData.setSelectionRange(pos, pos);
-        }
-      }
 
-      // show an error message
-      txtError.innerHTML =  err.toString();
-    }
-  }
 
-  /**
-   * Draw an example
-   * @param {String} id HTML id of the textarea containing the example code
-   */
-  function drawExample(id) {
-    txtData.value = document.getElementById(id).value;
-    draw();
-  }
 </script>
 
-<textarea id="example1" class="example">
-  digraph {
-  node [shape=circle fontSize=16]
-  edge [length=100, color=gray, fontColor=black]
 
-  A -> A[label=0.5];
-  B -> B[label=1.2] -> C[label=0.7] -- A;
-  B -> D;
-  D -> {B; C}
-  D -> E[label=0.2];
-  F -> F;
-  A [
-  fontColor=white,
-  color=red,
-  ]
-  }
-</textarea>
-
-<textarea id="example2" class="example">
-  digraph topology
-  {
-  node[shape=circle fontSize=12]
-  edge[length=170 fontSize=12]
-  "10.0.255.1" -> "10.0.255.3"[label="1.000"];
-  "10.0.255.1" -> "10.0.255.2"[label="1.000"];
-  "10.0.255.1" -> "10.0.255.2"[label="1.000"];
-  "10.0.255.1" -> "10.0.255.3"[label="1.000"];
-  "10.0.255.2" -> "10.0.255.1"[label="1.000"];
-  "10.0.255.2" -> "10.0.255.3"[label="1.000"];
-  "10.0.255.3" -> "10.0.255.1"[label="1.000"];
-  "10.0.255.3" -> "10.0.255.2"[label="1.000"];
-  "10.0.255.3" -> "10.0.3.0/24"[label="HNA", shape=solid];
-  "10.0.3.0/24"[shape=box];
-  "10.0.255.2" -> "10.0.2.0/24"[label="HNA"];
-  "10.0.2.0/24"[shape=box];
-  "10.0.255.1" -> "10.0.1.0/24"[label="HNA"];
-  "10.0.1.0/24"[shape=box];
-  }
-</textarea>
-
-<textarea id="example3" class="example">
-  digraph G  {
-  // note: not all attributes are recognized and supported by Network
-  //       unrecognized attributes are ignored
-
-  node[width=.25,height=.375,fontsize=15]
-  node [shape=filled fillcolor=#F1AAF0]
-  0-> 0 ;
-  1-> 1 ;
-  2-> 2 ;
-  3-> 3 ;
-  4-> 4 ;
-  5-> 5 ;
-  6-> 6 ;
-  7-> 5 ;
-  8-> 8 ;
-  9-> 9 ;
-  10-> 10 ;
-  11-> 10 ;
-  12-> 12 ;
-  13-> 5 ;
-  14-> 10 ;
-  15-> 0 ;
-  }
-</textarea>
-
-    <!-- jQuery -->
-    <script src="../bower_components/jquery/dist/jquery.min.js"></script>
-
-    <!-- Bootstrap Core JavaScript -->
-    <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-
-    <!-- Metis Menu Plugin JavaScript -->
-    <script src="../bower_components/metisMenu/dist/metisMenu.min.js"></script>
-
-    <!-- Morris Charts JavaScript -->
-    <script src="../bower_components/raphael/raphael-min.js"></script>
-
-    <!-- Custom Theme JavaScript -->
-    <script src="../dist/js/sb-admin-2.js"></script>
-
-    <!-- Flot Charts JavaScript -->
 
 </body>
 
